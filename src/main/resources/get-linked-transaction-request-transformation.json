@@ -1,0 +1,19 @@
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "#encodedKey": "filterCriteria.[#1].field",
+      "#IN": "filterCriteria.[#1].operator",
+      "*": {
+        "transferDetails": {
+          "linkedLoanTransactionKey": {
+            "@": "filterCriteria.[#2].values[]"
+          },
+          "linkedDepositTransactionKey": {
+            "@": "filterCriteria.[#2].values[]"
+          }
+        }
+      }
+    }
+  }
+]
