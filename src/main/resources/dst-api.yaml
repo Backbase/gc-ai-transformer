@@ -1,0 +1,1340 @@
+openapi: 3.0.3
+info:
+  description: "Allows you to create/retrieve loan accounts, retrieve amortization\
+    \ and retrieve loan transactions"
+  title: Loan service
+  version: 0.1.3
+servers:
+  - url: /
+tags:
+  - name: Grand Central
+paths:
+  /loans:
+    get:
+      description: Get Loans Based on provided query
+      operationId: getLoans
+      parameters:
+        - description: Loan Ids
+          examples:
+            comma-separated:
+              summary: comma separated values
+              value:
+                - "ids=loan1,loan2"
+            multi-param:
+              summary: multiple parameters
+              value:
+                - ids=loan1&loan2
+          explode: true
+          in: query
+          name: ids
+          required: true
+          schema:
+            items:
+              type: string
+            type: array
+            uniqueItems: true
+          style: form
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/loanBasicDetails'
+                type: array
+          description: Basic Loan details fetched
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If one or more request parameters don't comply with the specification
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If the authentication credentials provided are invalid
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If a runtime error occurs while processing the request
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Gateway timeout.
+      tags:
+        - Loan Integration
+    post:
+      description: Create Loan
+      operationId: createLoan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/loan'
+        description: Create Loan
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/createLoanResponse'
+                type: array
+          description: Loan created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If one or more request parameters don't comply with the specification
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If the authentication credentials provided are invalid
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If a runtime error occurs while processing the request
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Gateway timeout.
+      tags:
+        - Loan Integration
+    summary: Create loan account.
+  /loans/transactions:
+    get:
+      description: Get transaction details for multiple loans.
+      operationId: getLoanTransactionsForMultipleLoans
+      parameters:
+        - description: "The list of loan ids for which transactions will get retrieved.\
+          \ Example - loanIds=loanId1,loanId2"
+          examples:
+            comma-separated:
+              summary: Comma separated values
+              value:
+                - "loanIds=loanId1,loanId2"
+            multi-param:
+              summary: Multiple parameters
+              value:
+                - loanIds=loanId1&loanId1
+          explode: true
+          in: query
+          name: loanIds
+          required: true
+          schema:
+            items:
+              type: string
+            type: array
+            uniqueItems: true
+          style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/loansTransactions'
+                type: array
+          description: Loans transactions successfully retrieved.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Loan not found.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Invalid request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Authentication failed.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Internal server error.
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Gateway timeout.
+      tags:
+        - Loan Transactions
+  /loans/{loanId}:
+    get:
+      description: Get loan account by account Id.
+      operationId: getLoanById
+      parameters:
+        - description: The ID or encoded key of the loan account.
+          explode: false
+          in: path
+          name: loanId
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/loan'
+          description: Loan account details fetched.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If one or more request parameters don't comply with the specification
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If the authentication credentials provided are invalid
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If a runtime error occurs while processing the request
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Gateway timeout.
+      tags:
+        - Loan Integration
+  /loans/{loanId}/amortization-schedule:
+    get:
+      description: Fetches Amortization Schedule by Id
+      operationId: getAmortizationSchedule
+      parameters:
+        - description: Loan Id
+          explode: false
+          in: path
+          name: loanId
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/amortization'
+                type: array
+          description: Amortization Schedule
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If one or more request parameters don't comply with the specification
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If the authentication credentials provided are invalid
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If a runtime error occurs while processing the request
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Gateway timeout.
+      tags:
+        - Amortization
+  /loans/{loanId}/amortization-schedule/{amortizationPaymentId}:
+    get:
+      description: Fetches Amortization Payment by Id
+      operationId: getAmortizationPayment
+      parameters:
+        - description: Loan Id
+          explode: false
+          in: path
+          name: loanId
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: Amortization Payment Id
+          explode: false
+          in: path
+          name: amortizationPaymentId
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/amortization'
+          description: Amortization Payment
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If one or more request parameters don't comply with the specification
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If the authentication credentials provided are invalid
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If a runtime error occurs while processing the request
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Gateway timeout.
+      tags:
+        - Amortization
+  /loans/{loanId}/transactions:
+    get:
+      description: Retrieve loan transactions based on few filters
+      operationId: getLoanTransactionsByLoanId
+      parameters:
+        - description: Loan Id associated to transaction
+          explode: false
+          in: path
+          name: loanId
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: Filter transactions by the date range when transaction executed
+          example: 2023-01-30
+          explode: true
+          in: query
+          name: fromDate
+          required: false
+          schema:
+            format: date
+            type: string
+          style: form
+        - description: Filter transactions by the date range when transaction executed
+          example: 2023-03-30
+          explode: true
+          in: query
+          name: toDate
+          required: false
+          schema:
+            format: date
+            type: string
+          style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/loanTransaction'
+                type: array
+          description: Gets loan transactions pertaining to a filter
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Resource not available
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If one or more request parameters don't comply with the specification
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If the authentication credentials provided are invalid
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If a runtime error occurs while processing the request
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Gateway timeout.
+      tags:
+        - Loan Transactions
+  /loans/transactions/{transactionId}:
+    get:
+      description: Retrieve details of Loan Transaction by Transaction Id
+      operationId: getLoanTransactionByTransactionId
+      parameters:
+        - description: Unique identification of the transaction
+          explode: false
+          in: path
+          name: transactionId
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/loanTransaction'
+          description: Gets transaction details
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Resource not available
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If one or more request parameters don't comply with the specification
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If the authentication credentials provided are invalid
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: If a runtime error occurs while processing the request
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+          description: Gateway timeout.
+      tags:
+        - Loan Transactions
+components:
+  schemas:
+    custom-field:
+      additionalProperties:
+        type: object
+      description: Hosts custom fields related to loans
+      title: CustomField
+      type: object
+    createLoanResponse:
+      example:
+        accountId: "123456"
+        originationDate: 2022-10-25T10:29:19Z
+        accountKey: loan 123
+      properties:
+        accountId:
+          description: Id or encoded key of the loan account
+          example: "123456"
+          type: string
+        accountKey:
+          description: "The encoded key of the loan account, it is auto generated,\
+            \ and must be unique."
+          example: loan 123
+          type: string
+        originationDate:
+          description: The date this loan account was created
+          example: 2022-10-25T10:29:19Z
+          format: date-time
+          type: string
+      title: Create Loan Response
+      type: object
+    loanBasicDetails:
+      example:
+        minimumDueAmount: 200.12
+        lastPaymentDate: 2022-10-25T00:00:00.000+00:00
+        lastPaymentAmount: 200.12
+        id: "123456"
+        currencyCode: AUD
+        paidAmount: 200.12
+        loanProductType: null
+        loanAmount: 999.12
+        status: null
+      properties:
+        id:
+          description: The id or encoded key of the loan account
+          example: "123456"
+          type: string
+        loanProductType:
+          $ref: '#/components/schemas/loanProductType'
+        status:
+          $ref: '#/components/schemas/accountStatus'
+        currencyCode:
+          description: The alpha-3 code (complying with ISO 4217) of the currency
+            that qualifies the amount
+          example: AUD
+          pattern: "^[A-Z]{3}$"
+          type: string
+        minimumDueAmount:
+          description: Minimum due amount.
+          example: 200.12
+          type: number
+        lastPaymentAmount:
+          description: Last payment amount.
+          example: 200.12
+          type: number
+        lastPaymentDate:
+          description: Date on which last payment was done.
+          example: 2022-10-25
+          format: date
+          type: string
+        paidAmount:
+          description: Paid amount.
+          example: 200.12
+          type: number
+        loanAmount:
+          description: The loan amount
+          example: 999.12
+          type: number
+      title: Basic Loan Details
+      type: object
+    loan:
+      example:
+        branchId: branch Id
+        productArrangement:
+          loanPurpose: Car Loan
+          loanProductType: null
+          loanProductId: "1234"
+        customFields:
+          key: "{}"
+        description: any and all bank or investment accounts with financial institutions
+          including but not limited to
+        dates:
+          - dateValue: 2022-10-25T10:29:19Z
+            dateType: ORIGINATION_DATETIME
+          - dateValue: 2022-10-25T10:29:19Z
+            dateType: ORIGINATION_DATETIME
+        interestArrangement:
+          interestRate: 3.14
+          overdueInterestAmount: 0
+          interestDue: 200.12
+          interestDefinition: indexed
+          interestType: null
+          accruedInterest: 200.12
+          interestAmount: 200.12
+          interestRateType: null
+          interestPaymentFrequency: weekly
+          interestPeriod: 2022-10-25T10:29:19Z
+          interestPaid: 200.12
+        loanAmount: 200.12
+        feeArrangement:
+          feeAmount: 0
+          feeEffectivePeriod: 2016-09-06T13:37:50Z
+          feePlan: Regular
+          feeDueDate: 2022-10-25T10:29:19Z
+          feeType: Transfer
+          feeRate: 0
+        accountKey: loan 123
+        drawnAmount: 200.12
+        balance:
+          principalBalance: 4321.65
+          ledgerBalance: 4321.65
+          currentBalance: 3212.32
+          principalDue: 200.12
+          closingBalance: 4321.65
+          openingBalance: 3212.32
+          principalPaid: 200.12
+          availableBalance: 4321.65
+        name: loan name
+        parties:
+          - partyKey: 8a19db0a893e5ee601893f58d88344ef
+            partyId: party-three
+          - partyKey: 8a19db0a893e5ee601893f58d88344ef
+            partyId: party-three
+        creditLimit: 200.12
+        id: "123456"
+        currencyCode: AUD
+        holderType: null
+        status: null
+        repaymentArrangement:
+          nextRepaymentAmount: 200.12
+          minimumDueAmount: 200.12
+          totalNumberOfPayments: 20
+          gracePeriod: 10
+          numberOfPaymentsDone: 20
+          paymentAmount: 200.12
+          paymentType: null
+          repaymentPeriodUnit: null
+          repaymentType: Loan Repayment
+          nextRepaymentDate: 2022-10-25T00:00:00.000+00:00
+          lastPaymentDate: 2022-10-25T00:00:00.000+00:00
+          lastPaymentAmount: 200.12
+          paymentDate: 2022-10-25T00:00:00.000+00:00
+          repaymentPeriodCount: 0
+          repaymentSchedule: "1234"
+          paidAmount: 200.12
+          paymentStatus: null
+      properties:
+        id:
+          description: "The ID of the loan account, and must be unique."
+          example: "123456"
+          type: string
+        accountKey:
+          description: "The encoded key of the loan account, it is auto generated,\
+            \ and must be unique."
+          example: loan 123
+          type: string
+        status:
+          $ref: '#/components/schemas/accountStatus'
+        currencyCode:
+          description: The unique currency code used for the account.
+          example: AUD
+          pattern: "^[A-Z]{3}$"
+          type: string
+        name:
+          description: The name of the loan account.
+          example: loan name
+          type: string
+        description:
+          description: Commentary of account
+          example: any and all bank or investment accounts with financial institutions
+            including but not limited to
+          type: string
+        branchId:
+          description: "The branch identifier, can be the encoded key or the id."
+          example: branch Id
+          type: string
+        balance:
+          $ref: '#/components/schemas/balance'
+        creditLimit:
+          description: The overdraft limit of the loan account.
+          example: 200.12
+          type: number
+        drawnAmount:
+          description: The total amount withdrawn from the account till date.
+          example: 200.12
+          type: number
+        dates:
+          items:
+            $ref: '#/components/schemas/dates_inner'
+          title: Date
+          type: array
+        parties:
+          items:
+            $ref: '#/components/schemas/accountParty'
+          type: array
+        holderType:
+          $ref: '#/components/schemas/holderType'
+        loanAmount:
+          description: The loan amount.
+          example: 200.12
+          type: number
+        interestArrangement:
+          $ref: '#/components/schemas/interestArrangement'
+        feeArrangement:
+          $ref: '#/components/schemas/feeArrangement'
+        productArrangement:
+          $ref: '#/components/schemas/productArrangement'
+        repaymentArrangement:
+          $ref: '#/components/schemas/repaymentArrangement'
+        customFields:
+          additionalProperties:
+            type: object
+          description: Hosts custom fields related to loans
+          title: CustomField
+          type: object
+      title: Loan
+      type: object
+    accountParty:
+      description: Details of party associated with the loan account
+      example:
+        partyKey: 8a19db0a893e5ee601893f58d88344ef
+        partyId: party-three
+      properties:
+        partyKey:
+          description: Party key created by the core
+          example: 8a19db0a893e5ee601893f58d88344ef
+          type: string
+        partyId:
+          description: Unique and unambiguous identifier of a party
+          example: party-three
+          title: Party
+          type: string
+      title: Party
+      type: object
+    interestArrangement:
+      example:
+        interestRate: 3.14
+        overdueInterestAmount: 0
+        interestDue: 200.12
+        interestDefinition: indexed
+        interestType: null
+        accruedInterest: 200.12
+        interestAmount: 200.12
+        interestRateType: null
+        interestPaymentFrequency: weekly
+        interestPeriod: 2022-10-25T10:29:19Z
+        interestPaid: 200.12
+      properties:
+        interestRateType:
+          $ref: '#/components/schemas/interestRateType'
+        interestType:
+          $ref: '#/components/schemas/interestType'
+        interestRate:
+          description: The rate used for computing the interest for the loan account.
+          example: 3.14
+          type: number
+        interestDefinition:
+          description: Interest definition.
+          example: indexed
+          type: string
+        interestPeriod:
+          description: Date since an interest rate is valid.
+          example: 2022-10-25T10:29:19Z
+          format: date-time
+          type: string
+        overdueInterestAmount:
+          description: Represents the total interest amount due for the account (total
+            interest applied for account minus interest paid).
+          example: 0
+          type: number
+        interestPaymentFrequency:
+          description: "The interval used for determining how often is interest paid-\
+            \ weekly, monthly, quarterly, or annually."
+          example: weekly
+          type: string
+        accruedInterest:
+          description: The accrued interest. Represents the amount of interest that
+            has been accrued in the account.
+          example: 200.12
+          type: number
+        interestDue:
+          description: The interest due. Indicates how much interest it's due for
+            the account at this moment.
+          example: 200.12
+          type: number
+        interestPaid:
+          description: "The interest paid, indicates total interest paid into the\
+            \ account."
+          example: 200.12
+          type: number
+        interestAmount:
+          description: Amount of money representing interest payment
+          example: 200.12
+          type: number
+      title: Interest Arrangement
+      type: object
+    feeArrangement:
+      example:
+        feeAmount: 0
+        feeEffectivePeriod: 2016-09-06T13:37:50Z
+        feePlan: Regular
+        feeDueDate: 2022-10-25T10:29:19Z
+        feeType: Transfer
+        feeRate: 0
+      properties:
+        feeType:
+          description: The name of the predefined fee.
+          example: Transfer
+          type: string
+        feeAmount:
+          description: The amount of the fee that was applied for the service requested.
+          example: 0
+          type: number
+        feeDueDate:
+          description: The fee due date.
+          example: 2022-10-25T10:29:19Z
+          format: date-time
+          type: string
+        feeEffectivePeriod:
+          description: Period during which the fee is applicable.
+          example: 2016-09-06T13:37:50Z
+          format: date-time
+          type: string
+        feeRate:
+          description: "Represents the rate used to calculate the adjustment, allowance,\
+            \ charge, or fee amount."
+          example: 0
+          type: number
+        feePlan:
+          description: The breakdown of the fee amount structure.
+          example: Regular
+          type: string
+      title: Fee Arrangement
+      type: object
+    productArrangement:
+      example:
+        loanPurpose: Car Loan
+        loanProductType: null
+        loanProductId: "1234"
+      properties:
+        loanProductType:
+          $ref: '#/components/schemas/loanProductType'
+        loanProductId:
+          description: The ID or encoded key of the loan product.
+          example: "1234"
+          type: string
+        loanPurpose:
+          description: Purpose of loan.
+          example: Car Loan
+          type: string
+      title: Product Arrangement
+      type: object
+    repaymentArrangement:
+      example:
+        nextRepaymentAmount: 200.12
+        minimumDueAmount: 200.12
+        totalNumberOfPayments: 20
+        gracePeriod: 10
+        numberOfPaymentsDone: 20
+        paymentAmount: 200.12
+        paymentType: null
+        repaymentPeriodUnit: null
+        repaymentType: Loan Repayment
+        nextRepaymentDate: 2022-10-25T00:00:00.000+00:00
+        lastPaymentDate: 2022-10-25T00:00:00.000+00:00
+        lastPaymentAmount: 200.12
+        paymentDate: 2022-10-25T00:00:00.000+00:00
+        repaymentPeriodCount: 0
+        repaymentSchedule: "1234"
+        paidAmount: 200.12
+        paymentStatus: null
+      properties:
+        repaymentType:
+          description: Type of repayment.
+          example: Loan Repayment
+          type: string
+        repaymentSchedule:
+          description: Timing modality for repayment.
+          example: "1234"
+          type: string
+        totalNumberOfPayments:
+          description: Total number of payments to be done.
+          example: 20
+          type: integer
+        numberOfPaymentsDone:
+          description: Number of payments done.
+          example: 20
+          type: integer
+        lastPaymentAmount:
+          description: Last payment amount.
+          example: 200.12
+          type: number
+        lastPaymentDate:
+          description: Date on which last payment was done.
+          example: 2022-10-25
+          format: date
+          type: string
+        nextRepaymentAmount:
+          description: Next payment amount.
+          example: 200.12
+          type: number
+        nextRepaymentDate:
+          description: Date on which next payment to be done.
+          example: 2022-10-25
+          format: date
+          type: string
+        gracePeriod:
+          description: "Number of installments, when loan payment is deferred."
+          example: 10
+          type: number
+        paymentAmount:
+          description: Total amount of single installment (principal + interest).
+          example: 200.12
+          type: number
+        paymentDate:
+          description: Scheduled payment date
+          example: 2022-10-25
+          format: date
+          type: string
+        paymentStatus:
+          $ref: '#/components/schemas/paymentStatus'
+        paymentType:
+          $ref: '#/components/schemas/paymentType'
+        minimumDueAmount:
+          description: Indicates how much amount due at this moment.
+          example: 200.12
+          type: number
+        paidAmount:
+          description: Indicates how much amount paid at this moment.
+          example: 200.12
+          type: number
+        repaymentPeriodCount:
+          description: "The repayment period count. Represents how often the loan\
+            \ is to be repaid, stored based on the type repayment option"
+          example: 0
+          type: integer
+        repaymentPeriodUnit:
+          $ref: '#/components/schemas/repaymentPeriodUnit'
+      title: Repayment Arrangement
+      type: object
+    amortization:
+      example:
+        principalBalance: 200.12
+        interest: 200.12
+        principalDue: 200.12
+        amortizationPaymentId: "1"
+        id: "1234"
+        paymentDate: 2022-10-25T10:29:19Z
+        paymentAmount: 200.12
+        currencyCode: AUD
+        principalPaid: 200.12
+        paymentStatus: null
+        paymentType: null
+      properties:
+        id:
+          description: The id or encoded key of the loan account.
+          example: "1234"
+          type: string
+        paymentDate:
+          description: scheduled payment date.
+          example: 2022-10-25T10:29:19Z
+          format: date-time
+          type: string
+        paymentAmount:
+          description: scheduled payment amount.
+          example: 200.12
+          type: number
+        interest:
+          description: Total Interest Amount of the loan.
+          example: 200.12
+          type: number
+        currencyCode:
+          description: The alpha-3 code (complying with ISO 4217) of the currency
+            that qualifies the amount
+          example: AUD
+          pattern: "^[A-Z]{3}$"
+          type: string
+        principalBalance:
+          description: "The total principal owned by the client, from now on (principal\
+            \ disbursed - principal paid)."
+          example: 200.12
+          type: number
+        principalDue:
+          description: "The principal due, indicates how much principal it's due at\
+            \ this moment."
+          example: 200.12
+          type: number
+        principalPaid:
+          description: "The principal paid, holds the value of the total paid into\
+            \ the account."
+          example: 200.12
+          type: number
+        paymentStatus:
+          $ref: '#/components/schemas/paymentStatus'
+        paymentType:
+          $ref: '#/components/schemas/paymentType'
+        amortizationPaymentId:
+          description: payment id of amortization payment
+          example: "1"
+          type: string
+      title: Amortization
+      type: object
+    accountStatus:
+      description: The state of the loan account.
+      enum:
+        - PARTIAL_APPLICATION
+        - APPROVED
+        - PENDING_APPROVAL
+        - ACTIVE
+        - ACTIVE_IN_ARREARS
+        - MATURED
+        - LOCKED
+        - DORMANT
+        - CLOSED
+        - CLOSED_WRITTEN_OFF
+        - WITHDRAWN
+        - CLOSED_REJECTED
+      title: Loan Account Status
+      type: string
+    balance:
+      description: Different types of balances available for this account
+      example:
+        principalBalance: 4321.65
+        ledgerBalance: 4321.65
+        currentBalance: 3212.32
+        principalDue: 200.12
+        closingBalance: 4321.65
+        openingBalance: 3212.32
+        principalPaid: 200.12
+        availableBalance: 4321.65
+      properties:
+        currentBalance:
+          description: Includes any pending transactions that have not yet been cleared
+          example: 3212.32
+          type: number
+        availableBalance:
+          description: Amount of money that the account holder can withdraw immediately
+          example: 4321.65
+          type: number
+        openingBalance:
+          description: The opening balance amount of a loan account
+          example: 3212.32
+          type: number
+        closingBalance:
+          description: The closing balance amount of a loan account
+          example: 4321.65
+          type: number
+        ledgerBalance:
+          description: The balance of a general ledger account
+          example: 4321.65
+          type: number
+        principalBalance:
+          description: The principal balance of a credit account
+          example: 4321.65
+          type: number
+        principalDue:
+          description: "The principal due, indicates how much principal it's due at\
+            \ this moment."
+          example: 200.12
+          type: number
+        principalPaid:
+          description: "The principal paid, holds the value of the total paid into\
+            \ the account."
+          example: 200.12
+          type: number
+      title: Balance
+      type: object
+    dates:
+      items:
+        $ref: '#/components/schemas/dates_inner'
+      title: Date
+      type: array
+    holderType:
+      description: The type of the account holder.
+      enum:
+        - SINGLE
+        - JOINT
+        - ORGANISATION
+      title: Account Holder Type
+      type: string
+    repaymentPeriodUnit:
+      description: The repayment period unit. Represents the frequency of loan repayment.
+      enum:
+        - DAYS
+        - WEEKS
+        - MONTHS
+        - YEARS
+      title: Term Unit
+      type: string
+    loanProductType:
+      description: The type of product that this loan account is based on.
+      enum:
+        - CONSUMER_LOAN
+      title: Loan Product Type
+      type: string
+    interestRateType:
+      description: Represents the Interest Calculation Method for the loan account.
+      enum:
+        - SIMPLE
+        - COMPOUNDING
+        - CAPITALIZED
+      title: Interest rate type
+      type: string
+    interestType:
+      description: The potential options for the type of interest associated with
+        a trade.
+      enum:
+        - FIXED
+        - FLOATING_RATE_NOTE
+        - DUAL_BASIS
+        - INDEX
+        - DISCOUNTED
+        - ZERO_COUPON
+        - EX_INTEREST
+        - CUM_INTEREST
+      title: Interest type
+      type: string
+    paymentStatus:
+      description: The current payment status.
+      enum:
+        - SCHEDULED
+        - OVERDUE
+        - PAID
+        - PARTIALLY_PAID
+      title: Payment Status
+      type: string
+    paymentType:
+      description: The information specifying the type of payment.
+      enum:
+        - PRINCIPAL_ONLY
+        - INTEREST_ONLY
+        - PRINCIPAL_AND_INTEREST
+      title: Payment type
+      type: string
+    loanTransaction:
+      example:
+        amount: 200.12
+        customFields:
+          key: "{}"
+        currentBalance: 3212.32
+        description: Loan Payment
+        dates:
+          - dateValue: 2022-10-25T10:29:19Z
+            dateType: INITIATED_DATETIME
+          - dateValue: 2022-10-25T10:29:19Z
+            dateType: INITIATED_DATETIME
+        type: LOAN TRANSACTION
+        creditDebitIndicator: null
+        target: null
+        reference: TRAN-REF-123
+        principalBalance: 200.12
+        transferCurrency: AUD
+        name: Transaction-123
+        exchangeCurrency: AUD
+        from: null
+        id: TRAN-123
+        remarks: Loan Payment
+        status: null
+      properties:
+        id:
+          description: Unique identification of the transaction
+          example: TRAN-123
+          type: string
+        reference:
+          description: A tag/label issued by the initiator of the transaction in order
+            to be able to refer to the respective transaction.
+          example: TRAN-REF-123
+          type: string
+        type:
+          description: specifies type of transaction
+          example: LOAN TRANSACTION
+          type: string
+        name:
+          description: The name of transaction.
+          example: Transaction-123
+          type: string
+        description:
+          description: Short description of the transaction
+          example: Loan Payment
+          type: string
+        status:
+          $ref: '#/components/schemas/transactionStatus'
+        amount:
+          description: The amount in the specified currency
+          example: 200.12
+          type: number
+        creditDebitIndicator:
+          $ref: '#/components/schemas/creditDebitIndicator'
+        exchangeCurrency:
+          description: The alpha-3 code (complying with ISO 4217) of the currency
+            that qualifies the amount
+          example: AUD
+          pattern: "/^[A-Z]{3}$/"
+          type: string
+        transferCurrency:
+          description: The alpha-3 code (complying with ISO 4217) of the currency
+            that qualifies the amount
+          example: AUD
+          pattern: "/^[A-Z]{3}$/"
+          type: string
+        remarks:
+          description: Remarks related to the transaction
+          example: Loan Payment
+          type: string
+        currentBalance:
+          description: Indicates the balance of the account at that moment when the
+            transaction was executed
+          example: 3212.32
+          type: number
+        principalBalance:
+          description: Principal balance of the account
+          example: 200.12
+          type: number
+        dates:
+          items:
+            $ref: '#/components/schemas/transactionDates_inner'
+          title: Dates
+          type: array
+        from:
+          $ref: '#/components/schemas/loanTransaction_from'
+        target:
+          $ref: '#/components/schemas/loanTransaction_target'
+        customFields:
+          additionalProperties:
+            type: object
+          description: Hosts custom fields related to loans
+          title: CustomField
+          type: object
+      title: Transaction
+      type: object
+    transactionDates:
+      items:
+        $ref: '#/components/schemas/transactionDates_inner'
+      title: Dates
+      type: array
+    transactionAccount:
+      properties:
+        accountId:
+          description: Identification of the account.
+          example: ACC-1
+          type: string
+        reference:
+          description: Reference of account.
+          example: Ref-1
+          type: string
+        name:
+          description: Name of the account.
+          type: string
+        address:
+          description: Address of the account.
+          type: string
+        bankReference:
+          description: Bank name of the account.
+          type: string
+      title: Transaction Account
+      type: object
+    creditDebitIndicator:
+      description: "Indicates whether the amount is credited or debited. Enums- CRDT,\
+        \ DBIT"
+      enum:
+        - CRDT
+        - DBIT
+      title: Credit/Debit Indicator
+      type: string
+    transactionStatus:
+      description: Indicates the state of the transaction
+      enum:
+        - INITIATED
+        - EXECUTED
+        - CANCELLED
+        - CONFIRMED
+        - SUSPENDED
+        - PENDING
+        - COMPLETED
+        - NOTIFIED
+      title: Transaction Status
+      type: string
+    loansTransactions:
+      allOf:
+        - $ref: '#/components/schemas/loansTransactions_allOf'
+        - $ref: '#/components/schemas/loanTransaction'
+      title: Loans Transactions
+      type: object
+    errors:
+      items:
+        $ref: '#/components/schemas/error'
+      title: Errors
+      type: array
+    error:
+      properties:
+        errorCode:
+          description: GC Error Code
+          example: GC001
+          minLength: 1
+          type: string
+        errorMessages:
+          description: Detailed error information
+          items:
+            $ref: '#/components/schemas/errorMessage'
+          type: array
+      required:
+        - errorCode
+        - errorMessages
+      title: Error
+      type: object
+    errorMessage:
+      properties:
+        gc:
+          description: GC error message
+          example: gc error message
+          minLength: 1
+          type: string
+        core:
+          description: Core error message
+          example: core error message
+          minLength: 1
+          type: string
+      required:
+        - gc
+      title: ErrorMessage
+      type: object
+    dates_inner:
+      example:
+        dateValue: 2022-10-25T10:29:19Z
+        dateType: ORIGINATION_DATETIME
+      properties:
+        dateType:
+          description: LifecycleDate of account
+          enum:
+            - ORIGINATION_DATETIME
+            - END_DATETIME
+            - MATURITY_DATETIME
+            - APPROVED_DATETIME
+            - LAST_UPDATED_DATETIME
+          type: string
+        dateValue:
+          description: Holds value of date
+          example: 2022-10-25T10:29:19Z
+          format: date-time
+          type: string
+    loanTransaction_from:
+      allOf:
+        - $ref: '#/components/schemas/transactionAccount'
+        - description: Details of the source account
+    loanTransaction_target:
+      allOf:
+        - $ref: '#/components/schemas/transactionAccount'
+        - description: Details of the target account
+    transactionDates_inner:
+      example:
+        dateValue: 2022-10-25T10:29:19Z
+        dateType: INITIATED_DATETIME
+      properties:
+        dateType:
+          description: LifecycleDate of transaction
+          enum:
+            - INITIATED_DATETIME
+            - EXECUTED_DATETIME
+            - APPROVED_DATETIME
+            - CANCELLED_DATETIME
+          type: string
+        dateValue:
+          description: Holds value of date
+          example: 2022-10-25T10:29:19Z
+          format: date-time
+          type: string
+    loansTransactions_allOf:
+      properties:
+        loanId:
+          description: Unique identifier of the loan
+          example: U1223342
+          type: string
+      type: object
+      example: null
