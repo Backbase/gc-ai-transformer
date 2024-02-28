@@ -1,0 +1,44 @@
+[
+  {
+    "operation": "default",
+    "spec": {
+      "fromDate": "empty",
+      "toDate": "empty"
+    }
+  },
+  {
+    "operation": "shift",
+    "spec": {
+      "loanId": {
+        "#parentAccountID": "filterCriteria.[#1].field",
+        "#EQUALS": "filterCriteria.[#1].operator",
+        "@": "filterCriteria.[#1].value"
+      },
+      "fromDate": {
+        "empty": {
+          "@(2,toDate)": {
+            "empty": null,
+            "*": {
+              "#valueDate": "filterCriteria.[#5].field",
+              "@1": "filterCriteria.[#5].value",
+              "#BEFORE": "filterCriteria.[#5].operator"
+            }
+          }
+        },
+        "*": {
+          "#valueDate": "filterCriteria.[#3].field",
+          "@1": "filterCriteria.[#3].value",
+          "@(2,toDate)": {
+            "empty": {
+              "#AFTER": "filterCriteria.[#5].operator"
+            },
+            "*": {
+              "@1": "filterCriteria.[#5].secondValue",
+              "#BETWEEN": "filterCriteria.[#5].operator"
+            }
+          }
+        }
+      }
+    }
+  }
+]

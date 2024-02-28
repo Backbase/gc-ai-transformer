@@ -1,0 +1,90 @@
+[
+  {
+    "operation": "default",
+    "spec": {
+      "*": {
+        "dateTimeFields": [
+          "valueDate"
+        ],
+        "incomingDateTimeFormat": "uuuu-MM-dd'T'HH:mm:ssXXXXX"
+      }
+    }
+  },
+  {
+    "operation": "com.backbase.grandcentralgeneric.transformer.DateTimeTransformer"
+  },
+  {
+    "operation": "modify-overwrite-beta",
+    "spec": {
+      "*": {
+        "absAmount": "=abs(@(1,amount))",
+        "sum": "=doubleSum(@(1,amount),@(1,absAmount))"
+      }
+    }
+  },
+  {
+    "operation": "shift",
+    "spec": {
+      "*": {
+        "sum": {
+          "0.0": {
+            "#DBIT": "[&3].creditDebitIndicator",
+            "@(2,parentAccountDetails._Deposit_Details_Deposit_Account.bic)": "[&3].from.bankReference",
+            "@(2,parentAccountDetails.name)": "[&3].from.name",
+            "@(2,parentAccountDetails.id)": "[&3].from.accountId",
+            "@(2,transferAccountDetails.id)": "[&3].target.accountId",
+            "@(2,transferAccountDetails._Deposit_Details_Deposit_Account.bic)": "[&3].target.bankReference",
+            "@(2,transferAccountDetails.name)": "[&3].target.name",
+            "@(2,transferAccountDetails.loanName)": "[&3].target.name"
+          },
+          "*": {
+            "#CRDT": "[&3].creditDebitIndicator",
+            "@(2,parentAccountDetails._Deposit_Details_Deposit_Account.bic)": "[&3].target.bankReference",
+            "@(2,parentAccountDetails.name)": "[&3].target.name",
+            "@(2,parentAccountDetails.loanName)": "[&3].target.name",
+            "@(2,parentAccountDetails.id)": "[&3].target.accountId",
+            "@(2,transferAccountDetails.id)": "[&3].from.accountId",
+            "@(2,transferAccountDetails._Deposit_Details_Deposit_Account.bic)": "[&3].from.bankReference",
+            "@(2,transferAccountDetails.name)": "[&3].from.name"
+          }
+        },
+        "valueDate": {
+          "*": {
+            "@1": "[&3].dateWrapper.dates[#3].dateValue",
+            "#EXECUTED_DATETIME": "[&3].dateWrapper.dates[#3].dateType"
+          }
+        },
+        "id": "[&1].id",
+        "type": "[&1].type",
+        "absAmount": "[&1].amount",
+        "@currency.currencyCode": "[&1].transferCurrency",
+        "notes": "[&1].remarks",
+        "encodedKey" : "[&1].reference",
+        "@accountBalances.totalBalance": "[&1].currentBalance",
+        "@accountBalances.principalBalance": "[&1].principalBalance"
+
+      }
+    }
+  }
+,
+  {
+    "operation": "modify-overwrite-beta",
+    "spec": {
+      "*": {
+        "dateWrapper": "=recursivelySquashNulls"
+      }
+    }
+  }
+,
+  {
+    "operation": "shift",
+    "spec": {
+      "*": {
+        "*": "[&1].&",
+        "dateWrapper": {
+          "*": "[&2].&"
+        }
+      }
+    }
+  }
+]
